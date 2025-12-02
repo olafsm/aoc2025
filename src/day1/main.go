@@ -11,7 +11,7 @@ type Dial struct {
 	Position int
 }
 
-func overflow_add(a int, b int, max int) (int, bool) {
+func overflowAdd(a int, b int, max int) (int, bool) {
 	sum := a + b
 	if sum >= max {
 		return sum - max, true
@@ -19,7 +19,7 @@ func overflow_add(a int, b int, max int) (int, bool) {
 	return sum, false
 }
 
-func underflow_sub(a int, b int, max int) (int, bool) {
+func underflowSub(a int, b int, max int) (int, bool) {
 	diff := a - b
 	if diff < 0 {
 		return diff + max, true
@@ -34,7 +34,7 @@ func (d *Dial) Rotate(direction string, steps int, max int) int {
 	previous_position := d.Position
 	switch direction {
 	case "R":
-		d.Position, wrapped = overflow_add(d.Position, remainder, max)
+		d.Position, wrapped = overflowAdd(d.Position, remainder, max)
 		if d.Position == 0 {
 			return times_passed_zero + 1
 		}
@@ -43,7 +43,7 @@ func (d *Dial) Rotate(direction string, steps int, max int) int {
 		}
 
 	case "L":
-		d.Position, wrapped = underflow_sub(d.Position, remainder, max)
+		d.Position, wrapped = underflowSub(d.Position, remainder, max)
 		if d.Position == 0 {
 			return times_passed_zero + 1
 		}
