@@ -11,29 +11,47 @@ type Dial struct {
 	Position int
 }
 
-func overflow_add(a int, b int, max int) int {
+func overflow_add(a int, b int, max int) (int, bool) {
 	sum := a + b
 	if sum >= max {
-		return sum - max
+		return sum - max, true
 	}
-	return sum
+	return sum, false
 }
 
-func underflow_sub(a int, b int, max int) int {
+func underflow_sub(a int, b int, max int) (int, bool) {
 	diff := a - b
 	if diff < 0 {
-		return diff + max
+		return diff + max, true
 	}
-	return diff
+	return diff, false
 }
 
-func (d *Dial) Rotate(direction string, steps int, max int) {
+func (d *Dial) Rotate(direction string, steps int, max int) int {
+	times_passed_zero := steps / max
+	remainder := steps % max
+	wrapped := false
+	previous_position := d.Position
 	switch direction {
 	case "R":
-		d.Position = overflow_add(d.Position, steps%max, max)
+		d.Position, wrapped = overflow_add(d.Position, remainder, max)
+		if d.Position == 0 {
+			return times_passed_zero + 1
+		}
+		if wrapped {
+			return times_passed_zero + 1
+		}
+
 	case "L":
-		d.Position = underflow_sub(d.Position, steps%max, max)
+		d.Position, wrapped = underflow_sub(d.Position, remainder, max)
+		if d.Position == 0 {
+			return times_passed_zero + 1
+		}
+		if wrapped && previous_position != 0 {
+			times_passed_zero += 1
+		}
 	}
+	return times_passed_zero
 }
 
 func main() {
@@ -53,11 +71,10 @@ func run(file *os.File) int {
 		line := scanner.Text()
 		direction := line[0:1]
 		steps, _ := strconv.Atoi(line[1:])
-		dial.Rotate(direction, steps, 100)
-		fmt.Printf("Rotating %d steps %s to point to pos %d\n", steps, direction, dial.Position)
-		if dial.Position == 0 {
-			zero_count++
-		}
+		times_passed_zero := dial.Rotate(direction, steps, 100)
+
+		fmt.Printf("Rotating %s%d to point at %d, passing zero %d times\n", direction, steps, dial.Position, times_passed_zero)
+		zero_count += times_passed_zero
 	}
 	return zero_count
 }
