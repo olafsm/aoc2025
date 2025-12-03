@@ -10,7 +10,7 @@ func TestRun(t *testing.T) {
 	defer func() {
 		f.Close()
 	}()
-	expected := 357
+	expected := 3121910778619
 	actual := run(f)
 	if actual != expected {
 		t.Errorf("Expected %d, got %d", expected, actual)

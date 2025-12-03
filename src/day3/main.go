@@ -3,33 +3,53 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"log/slog"
 	"os"
 	"strconv"
 	"strings"
 )
 
-func findHigestJoltage(bank string) int {
-	fmt.Printf("bank: %s\n", bank)
+var handler = slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+	Level: slog.LevelWarn,
+})
+
+var logger = slog.New(
+	handler,
+)
+
+func findHighestDigitInRestOfUsableBank(bank string) (rune, int) {
 	highest := '0'
-	highestAfter := '0'
+	highestPos := 0
 	for i, ch := range bank {
-		if ch > highest && i != len(bank)-1 {
-			highestAfter = '0'
+		if ch > highest {
 			highest = ch
-		} else if ch > highestAfter {
-			highestAfter = ch
+			highestPos = i
 		}
 	}
-	fmt.Printf("Found highest and highestAfter: %d, %d\n", highest-'0', highestAfter-'0')
-	val, _ := strconv.Atoi(fmt.Sprintf("%d%d", int(highest-'0'), int(highestAfter-'0')))
-	return val
+	return highest, highestPos
 }
+
+func findHighestJoltageInBank(bank string) int {
+	sumDigits := []rune{}
+	lastIndex := 0
+	for i := 12; i > 0; i-- {
+		usableBank := bank[lastIndex : len(bank)-i+1]
+		logger.Info("Searching for substring", "len", i, "bank", bank, "bankLen", len(bank), "searchableBank", bank[:len(bank)-i], "rest", bank[len(bank)-i:], "restLen", len(bank[len(bank)-i:]))
+		val, posInRest := findHighestDigitInRestOfUsableBank(usableBank)
+		logger.Info("  -> Found highest digit", "digit", string(val), "pos", posInRest)
+		lastIndex = lastIndex + posInRest + 1
+		sumDigits = append(sumDigits, val)
+	}
+	sum, _ := strconv.Atoi(string(sumDigits))
+	return sum
+}
+
 func run(file *os.File) int {
 	scanner := bufio.NewScanner(file)
 	joltageSum := 0
 	for scanner.Scan() {
 		line := strings.TrimSpace(scanner.Text())
-		joltageSum += findHigestJoltage(line)
+		joltageSum += findHighestJoltageInBank(line)
 	}
 	return joltageSum
 }
