@@ -10,7 +10,7 @@ func TestRun(t *testing.T) {
 	defer func() {
 		f.Close()
 	}()
-	expected := 13
+	expected := 43
 
 	actual := run(f)
 

@@ -35,6 +35,18 @@ func (g *Grid) String() string {
 	return sb.String()
 }
 
+func (g *Grid) Clone() Grid {
+	clone := Grid{}
+	for _, line := range *g {
+		newLine := Line{}
+		for _, space := range line {
+			newLine = append(newLine, space)
+		}
+		clone = append(clone, newLine)
+	}
+	return clone
+}
+
 func (g *Grid) numberOfNeighborsWithType(x, y int) int {
 	directions := [][2]int{
 		{-1, -1}, {0, -1}, {1, -1},
@@ -64,13 +76,21 @@ func run(file *os.File) int {
 		grid = append(grid, Line(line))
 	}
 	accessibleRolls := 0
-	for y := range len(grid[0]) {
-		for x := range len(grid) {
-			if grid[y][x] == RollOfPaper && grid.numberOfNeighborsWithType(x, y) < 4 {
-				grid[y][x] = CountedRollOfPaper
-				accessibleRolls++
+	for {
+		newGridToVisit := grid.Clone()
+		for y := range len(grid[0]) {
+			for x := range len(grid) {
+				if grid[y][x] == RollOfPaper && grid.numberOfNeighborsWithType(x, y) < 4 {
+					grid[y][x] = CountedRollOfPaper
+					newGridToVisit[y][x] = Empty
+					accessibleRolls++
+				}
 			}
 		}
+		if grid.String() == newGridToVisit.String() {
+			break
+		}
+		grid = newGridToVisit.Clone()
 	}
 	return accessibleRolls
 }
